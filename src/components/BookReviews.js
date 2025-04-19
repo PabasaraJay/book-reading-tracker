@@ -1,15 +1,12 @@
 import React, { useState, useEffect } from 'react';
+import { sampleBooks } from '../data/sampleBooks';
 
 const BookReviews = () => {
   // Mock user ID for demonstration
   const currentUserId = 'user123';
   
-  // State for books (in a real app, this would come from an API or context)
-  const [books, setBooks] = useState([
-    { id: 1, title: 'The Great Gatsby', author: 'F. Scott Fitzgerald' },
-    { id: 2, title: 'To Kill a Mockingbird', author: 'Harper Lee' },
-    { id: 3, title: '1984', author: 'George Orwell' }
-  ]);
+  // State for books (now using sampleBooks)
+  const [books, setBooks] = useState(sampleBooks);
 
   const [selectedBook, setSelectedBook] = useState(null);
   const [reviews, setReviews] = useState([]);
@@ -104,7 +101,7 @@ const BookReviews = () => {
           <option value="">Select a book...</option>
           {books.map(book => (
             <option key={book.id} value={book.id}>
-              {book.title} by {book.author}
+              {book.title}
             </option>
           ))}
         </select>
