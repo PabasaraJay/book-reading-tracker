@@ -1,0 +1,44 @@
+.homepage {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 2rem;
+}
+
+.homepage h1 {
+  text-align: center;
+  margin-bottom: 3rem;
+  color: #333;
+}
+
+.navigation-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+  gap: 2rem;
+  padding: 1rem;
+}
+
+.nav-card {
+  text-decoration: none;
+  color: inherit;
+  background: white;
+  border-radius: 10px;
+  padding: 2rem;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+  text-align: center;
+}
+
+.nav-card:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 6px 12px rgba(0, 0, 0, 0.15);
+}
+
+.nav-card h2 {
+  margin-bottom: 1rem;
+  color: #2c3e50;
+}
+
+.nav-card p {
+  color: #666;
+  margin: 0;
+} 
