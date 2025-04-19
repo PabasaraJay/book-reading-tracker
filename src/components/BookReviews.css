@@ -1,0 +1,73 @@
+.book-reviews {
+  padding: 1rem;
+  border: 1px solid #ccc;
+  margin-bottom: 1rem;
+  background-color: #F8F6F2;
+}
+
+.book-selection {
+  margin-bottom: 1rem;
+}
+
+.book-selection select {
+  width: 100%;
+  padding: 0.5rem;
+}
+
+.book-title {
+  margin-bottom: 1rem;
+}
+
+.review-input {
+  margin-bottom: 1rem;
+}
+
+.rating-stars {
+  margin-bottom: 0.5rem;
+}
+
+.rating-stars span {
+  cursor: pointer;
+  font-size: 1.5rem;
+}
+
+.review-textarea {
+  width: 100%;
+  margin-bottom: 0.5rem;
+}
+
+.characters-remaining {
+  margin-bottom: 0.5rem;
+}
+
+.search-sort {
+  margin-bottom: 1rem;
+}
+
+.search-sort input {
+  margin-right: 1rem;
+}
+
+.error-message {
+  color: red;
+}
+
+.review-item {
+  margin-bottom: 1rem;
+  padding: 0.5rem;
+  border: 1px solid #eee;
+  background-color: white;
+}
+
+.review-item.user-review {
+  background-color: #f0f0f0;
+}
+
+.review-date {
+  font-size: 0.8rem;
+  color: #666;
+}
+
+.review-actions button {
+  margin-left: 0.5rem;
+} 

@@ -1,0 +1,140 @@
+:root {
+  /* Primary Colors */
+  --color-primary: #8B7355; /* Warm brown - like aged paper */
+  --color-primary-light: #B8A088;
+  --color-primary-dark: #5C4A3A;
+
+  /* Secondary Colors */
+  --color-secondary: #D4C4B7; /* Soft beige - like book pages */
+  --color-secondary-light: #E8DED1;
+  --color-secondary-dark: #B8A088;
+
+  /* Accent Colors */
+  --color-accent: #7D5A50; /* Deep brown - like leather binding */
+  --color-accent-light: #A68A7F;
+  --color-accent-dark: #4A3A35;
+
+  /* Background Colors */
+  --color-background: #F5F1E8; /* Creamy off-white - like parchment */
+  --color-background-alt: #E8E2D5;
+  --color-background-dark: #D4C4B7;
+
+  /* Text Colors */
+  --color-text: #2C1810; /* Deep brown - like ink */
+  --color-text-light: #5C4A3A;
+  --color-text-lighter: #8B7355;
+
+  /* Status Colors */
+  --color-success: #4A6B3A; /* Forest green */
+  --color-error: #8B3A3A; /* Deep red */
+  --color-warning: #8B6B3A; /* Amber */
+  --color-info: #3A5B6B; /* Teal */
+
+  /* Shadows */
+  --shadow-sm: 0 2px 4px rgba(44, 24, 16, 0.1);
+  --shadow-md: 0 4px 8px rgba(44, 24, 16, 0.15);
+  --shadow-lg: 0 8px 16px rgba(44, 24, 16, 0.2);
+
+  /* Transitions */
+  --transition-fast: 0.2s ease;
+  --transition-normal: 0.3s ease;
+  --transition-slow: 0.5s ease;
+}
+
+/* Global Styles */
+body {
+  background-color: var(--color-background);
+  color: var(--color-text);
+  font-family: 'Georgia', serif;
+  line-height: 1.6;
+  margin: 0;
+  padding: 0;
+}
+
+/* Typography */
+h1, h2, h3, h4, h5, h6 {
+  color: var(--color-text);
+  font-family: 'Playfair Display', serif;
+  font-weight: 600;
+  margin-bottom: 1rem;
+}
+
+/* Links */
+a {
+  color: var(--color-primary);
+  text-decoration: none;
+  transition: color var(--transition-fast);
+}
+
+a:hover {
+  color: var(--color-primary-dark);
+}
+
+/* Buttons */
+button {
+  background-color: var(--color-primary);
+  border: none;
+  border-radius: 4px;
+  color: white;
+  cursor: pointer;
+  font-family: 'Georgia', serif;
+  padding: 0.5rem 1rem;
+  transition: background-color var(--transition-fast);
+}
+
+button:hover {
+  background-color: var(--color-primary-dark);
+}
+
+button.secondary {
+  background-color: var(--color-secondary);
+  color: var(--color-text);
+}
+
+button.secondary:hover {
+  background-color: var(--color-secondary-dark);
+}
+
+/* Inputs */
+input, textarea, select {
+  background-color: white;
+  border: 1px solid var(--color-secondary);
+  border-radius: 4px;
+  color: var(--color-text);
+  font-family: 'Georgia', serif;
+  padding: 0.5rem;
+  transition: border-color var(--transition-fast);
+}
+
+input:focus, textarea:focus, select:focus {
+  border-color: var(--color-primary);
+  outline: none;
+}
+
+/* Cards */
+.card {
+  background-color: white;
+  border-radius: 8px;
+  box-shadow: var(--shadow-sm);
+  padding: 1.5rem;
+  transition: box-shadow var(--transition-normal);
+}
+
+.card:hover {
+  box-shadow: var(--shadow-md);
+}
+
+/* Utility Classes */
+.text-center {
+  text-align: center;
+}
+
+.mt-1 { margin-top: 0.5rem; }
+.mt-2 { margin-top: 1rem; }
+.mt-3 { margin-top: 1.5rem; }
+.mt-4 { margin-top: 2rem; }
+
+.mb-1 { margin-bottom: 0.5rem; }
+.mb-2 { margin-bottom: 1rem; }
+.mb-3 { margin-bottom: 1.5rem; }
+.mb-4 { margin-bottom: 2rem; } 

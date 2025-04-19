@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { sampleBooks } from '../data/sampleBooks';
+import './BookReviews.css';
 
 const BookReviews = () => {
   // Mock user ID for demonstration
@@ -84,11 +85,11 @@ const BookReviews = () => {
     : 0;
 
   return (
-    <div className="book-reviews" style={{ padding: '1rem', border: '1px solid #ccc', marginBottom: '1rem' }}>
+    <div className="book-reviews">
       <h2>Book Reviews</h2>
       
       {/* Book Selection */}
-      <div style={{ marginBottom: '1rem' }}>
+      <div className="book-selection">
         <select
           value={selectedBook?.id || ''}
           onChange={(e) => {
@@ -96,7 +97,6 @@ const BookReviews = () => {
             setSelectedBook(book);
             setError('');
           }}
-          style={{ width: '100%', padding: '0.5rem' }}
         >
           <option value="">Select a book...</option>
           {books.map(book => (
@@ -110,21 +110,20 @@ const BookReviews = () => {
       {selectedBook && (
         <>
           {/* Average Rating Display */}
-          <div style={{ marginBottom: '1rem' }}>
+          <div className="book-title">
             <h3>{selectedBook.title}</h3>
             <p>Average Rating: {averageRating.toFixed(1)}/5 ⭐</p>
           </div>
 
           {/* Review Input */}
-          <div style={{ marginBottom: '1rem' }}>
-            <div style={{ marginBottom: '0.5rem' }}>
+          <div className="review-input">
+            <div className="rating-stars">
               Rating:
               {[1, 2, 3, 4, 5].map(star => (
                 <span
                   key={star}
                   onClick={() => setNewReview({ ...newReview, rating: star })}
                   onMouseEnter={() => setNewReview({ ...newReview, rating: star })}
-                  style={{ cursor: 'pointer', fontSize: '1.5rem' }}
                 >
                   {star <= newReview.rating ? '⭐' : '☆'}
                 </span>
@@ -138,22 +137,21 @@ const BookReviews = () => {
                 }
               }}
               placeholder="Your review..."
-              style={{ width: '100%', marginBottom: '0.5rem' }}
+              className="review-textarea"
             />
-            <div style={{ marginBottom: '0.5rem' }}>
+            <div className="characters-remaining">
               Characters remaining: {MAX_CHARACTERS - newReview.comment.length}
             </div>
             <button onClick={handleAddReview}>Add Review</button>
           </div>
 
           {/* Search and Sort */}
-          <div style={{ marginBottom: '1rem' }}>
+          <div className="search-sort">
             <input
               type="text"
               placeholder="Search reviews..."
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
-              style={{ marginRight: '1rem' }}
             />
             <select
               value={sortBy}
@@ -166,7 +164,7 @@ const BookReviews = () => {
           </div>
 
           {/* Error Message */}
-          {error && <p style={{ color: 'red' }}>{error}</p>}
+          {error && <p className="error-message">{error}</p>}
 
           {/* Reviews List */}
           <div>
@@ -176,20 +174,15 @@ const BookReviews = () => {
               filteredReviews.map((review) => (
                 <div
                   key={review.id}
-                  style={{
-                    marginBottom: '1rem',
-                    padding: '0.5rem',
-                    border: '1px solid #eee',
-                    backgroundColor: review.userId === currentUserId ? '#f0f0f0' : 'white'
-                  }}
+                  className={`review-item ${review.userId === currentUserId ? 'user-review' : ''}`}
                 >
                   <p>Rating: {'⭐'.repeat(review.rating)}</p>
                   <p>{review.comment}</p>
-                  <p style={{ fontSize: '0.8rem', color: '#666' }}>
+                  <p className="review-date">
                     {new Date(review.timestamp).toLocaleDateString()}
                   </p>
                   {review.userId === currentUserId && (
-                    <div>
+                    <div className="review-actions">
                       <button
                         onClick={() => handleEditReview(review.id, {
                           comment: prompt('Edit your review:', review.comment),
@@ -200,7 +193,6 @@ const BookReviews = () => {
                       </button>
                       <button
                         onClick={() => handleDeleteReview(review.id)}
-                        style={{ marginLeft: '0.5rem' }}
                       >
                         Delete
                       </button>
