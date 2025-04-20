@@ -8,7 +8,7 @@ const AddBook = () => {
     title: '',
     author: '',
     genre: '',
-    language: 'English',
+    language: '',
     seriesName: '',
     publicationDate: null,
     edition: '',
@@ -337,30 +337,39 @@ const AddBook = () => {
       {success && <p style={{ color: 'green' }}>{success}</p>}
 
       <h3>Book List</h3>
-      <ul className="book-list">
+      <div className="book-shelf">
         {books.map((b) => (
-          <li key={b.id} className="book-item">
-            <div className="book-info">
-              <strong>{b.title}</strong> by {b.author} – {b.genre}, {b.language}, {b.pages} pages
-              {b.seriesName && ` (Part of: ${b.seriesName})`}
+          <div key={b.id} className="book-card">
+            <div className="book-cover">
+              <div className="book-spine"></div>
+              <div className="book-title">{b.title}</div>
             </div>
-            <div className="book-actions">
-              <button 
-                onClick={() => handleEditBook(b)}
-                className="edit-button"
-              >
-                Edit
-              </button>
-              <button 
-                onClick={() => handleDeleteBook(b.id)}
-                className="delete-button"
-              >
-                Delete
-              </button>
+            <div className="book-details">
+              <p><strong>Author:</strong> {b.author}</p>
+              <p><strong>Genre:</strong> {b.genre}</p>
+              <p><strong>Language:</strong> {b.language}</p>
+              {b.seriesName && <p><strong>Series:</strong> {b.seriesName}</p>}
+              <p><strong>Published:</strong> {b.publicationDate ? new Date(b.publicationDate).toLocaleDateString() : '-'}</p>
+              <p><strong>Edition:</strong> {b.edition}</p>
+              <p><strong>Pages:</strong> {b.pages}</p>
+              <div className="book-actions">
+                <button 
+                  onClick={() => handleEditBook(b)}
+                  className="edit-button"
+                >
+                  Edit
+                </button>
+                <button 
+                  onClick={() => handleDeleteBook(b.id)}
+                  className="delete-button"
+                >
+                  Delete
+                </button>
+              </div>
             </div>
-          </li>
+          </div>
         ))}
-      </ul>
+      </div>
     </div>
   );
 };
