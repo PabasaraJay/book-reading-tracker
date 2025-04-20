@@ -65,4 +65,33 @@
 .nav-card p {
   color: #666;
   margin: 0;
+}
+
+.description-section {
+  max-width: 800px;
+  margin: 2rem auto;
+  padding: 2rem;
+  text-align: center;
+  background-color: rgba(255, 255, 255, 0.5);
+  border-radius: 15px;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+}
+
+.description-section p {
+  font-size: 1.1rem;
+  line-height: 1.6;
+  color: #333;
+  margin-bottom: 1rem;
+}
+
+.features-list {
+  margin: 2rem 0;
+  padding: 1rem;
+  background-color: rgba(255, 255, 255, 0.3);
+  border-radius: 10px;
+}
+
+.features-list p {
+  margin: 0.5rem 0;
+  font-size: 1rem;
 } 

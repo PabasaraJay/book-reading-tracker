@@ -24,6 +24,18 @@ const HomePage = () => {
           <p>Write and read book reviews</p>
         </Link>
       </div>
+      <div className="description-section">
+        <p>Brew a warm cup of tea, find your favorite corner, and settle in.</p>
+        <p>This little nook of the internet is your space to collect stories, trace your reading journey, and keep the words that moved you.</p>
+        <p>Here, books aren't just read — they're experienced, cherished, and remembered.</p>
+        <div className="features-list">
+          <p>✨ Add your books like treasured keepsakes.</p>
+          <p>📖 Record your reading moments, one chapter at a time.</p>
+          <p>💬 Save quotes that linger in your heart.</p>
+          <p>⭐ Share quiet reflections and honest reviews.</p>
+        </div>
+        <p>Whether you're savoring slow reads or flying through pages, this is your cozy corner to make every book a part of you.</p>
+      </div>
     </div>
   );
 };
