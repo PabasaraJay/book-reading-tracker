@@ -186,7 +186,7 @@ const AddBook = () => {
     <div className="add-book-ui">
       <Banner title="Add Book" />
       <div className="form-card">
-        <h2>{editingBook ? 'Edit Book' : 'Add Book'}</h2>
+        <h2>{editingBook ? 'Edit Book' : 'Add Your Favorite Books Here'}</h2>
 
         <div className="form-group">
           <label>Title *</label>
