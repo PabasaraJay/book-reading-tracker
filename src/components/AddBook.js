@@ -138,7 +138,7 @@ const AddBook = () => {
       genre: bookToEdit.genre,
       language: bookToEdit.language,
       seriesName: bookToEdit.seriesName,
-      publicationDate: new Date(bookToEdit.publicationDate),
+      publicationDate: bookToEdit.publicationDate instanceof Date ? bookToEdit.publicationDate : new Date(bookToEdit.publicationDate),
       edition: bookToEdit.edition,
       pages: bookToEdit.pages
     });
@@ -185,158 +185,157 @@ const AddBook = () => {
   return (
     <div className="add-book-ui">
       <Banner title="Add Book" />
-      <h2>{editingBook ? 'Edit Book' : 'Add Book'}</h2>
+      <div className="form-card">
+        <h2>{editingBook ? 'Edit Book' : 'Add Book'}</h2>
 
-      <div style={{ marginBottom: '0.5rem' }}>
-        <label>Title *</label>
-        <input
-          type="text"
-          name="title"
-          placeholder="Book Title"
-          value={book.title}
-          onChange={handleChange}
-          style={{ width: '100%', padding: '0.5rem' }}
-        />
-      </div>
-
-      <div style={{ marginBottom: '0.5rem' }}>
-        <label>Author *</label>
-        <input
-          type="text"
-          name="author"
-          placeholder="Author"
-          value={book.author}
-          onChange={handleChange}
-          style={{ width: '100%', padding: '0.5rem' }}
-        />
-      </div>
-
-      <div style={{ marginBottom: '0.5rem' }}>
-        <label>Genre *</label>
-        <select
-          name="genre"
-          value={book.genre}
-          onChange={handleChange}
-          style={{ width: '100%', padding: '0.5rem' }}
-        >
-          <option value="">Select Genre</option>
-          {genres.map(genre => (
-            <option key={genre} value={genre}>{genre}</option>
-          ))}
-        </select>
-      </div>
-
-      <div style={{ marginBottom: '0.5rem' }}>
-        <label>Language *</label>
-        <div>
-          <label>
-            <input
-              type="radio"
-              name="language"
-              value="English"
-              checked={book.language === 'English'}
-              onChange={handleChange}
-            />
-            English
-          </label>
-          <label style={{ marginLeft: '1rem' }}>
-            <input
-              type="radio"
-              name="language"
-              value="Sinhala"
-              checked={book.language === 'Sinhala'}
-              onChange={handleChange}
-            />
-            Sinhala
-          </label>
+        <div className="form-group">
+          <label>Title *</label>
+          <input
+            type="text"
+            name="title"
+            placeholder="Book Title"
+            value={book.title}
+            onChange={handleChange}
+          />
         </div>
-      </div>
 
-      <div style={{ marginBottom: '0.5rem' }}>
-        <label>Series Name (Optional)</label>
-        <input
-          type="text"
-          name="seriesName"
-          placeholder="Series Name"
-          value={book.seriesName}
-          onChange={handleChange}
-          style={{ width: '100%', padding: '0.5rem' }}
-        />
-      </div>
+        <div className="form-group">
+          <label>Author *</label>
+          <input
+            type="text"
+            name="author"
+            placeholder="Author"
+            value={book.author}
+            onChange={handleChange}
+          />
+        </div>
 
-      <div style={{ marginBottom: '0.5rem' }}>
-        <label>Publication Date *</label>
-        <DatePicker
-          selected={book.publicationDate}
-          onChange={handleDateChange}
-          maxDate={new Date()}
-          dateFormat="yyyy-MM-dd"
-          placeholderText="Select publication date"
-          className="date-picker"
-          style={{ width: '100%', padding: '0.5rem' }}
-        />
-      </div>
+        <div className="form-group">
+          <label>Genre *</label>
+          <select
+            name="genre"
+            value={book.genre}
+            onChange={handleChange}
+          >
+            <option value="">Select Genre</option>
+            {genres.map(genre => (
+              <option key={genre} value={genre}>{genre}</option>
+            ))}
+          </select>
+        </div>
 
-      <div style={{ marginBottom: '0.5rem' }}>
-        <label>Edition *</label>
-        <select
-          name="edition"
-          value={book.edition}
-          onChange={handleChange}
-          style={{ width: '100%', padding: '0.5rem' }}
-        >
-          <option value="">Select Edition</option>
-          {editions.map(edition => (
-            <option key={edition} value={edition}>{edition}</option>
-          ))}
-        </select>
-      </div>
+        <div className="form-group">
+          <label>Language *</label>
+          <div className="language-options">
+            <label>
+              <input
+                type="radio"
+                name="language"
+                value="English"
+                checked={book.language === 'English'}
+                onChange={handleChange}
+              />
+              English
+            </label>
+            <label>
+              <input
+                type="radio"
+                name="language"
+                value="Sinhala"
+                checked={book.language === 'Sinhala'}
+                onChange={handleChange}
+              />
+              Sinhala
+            </label>
+          </div>
+        </div>
 
-      <div style={{ marginBottom: '0.5rem' }}>
-        <label>Page Count *</label>
-        <input
-          type="number"
-          name="pages"
-          placeholder="Page Count"
-          value={book.pages}
-          onChange={handleChange}
-          style={{ width: '100%', padding: '0.5rem' }}
-        />
-      </div>
+        <div className="form-group">
+          <label>Series Name (Optional)</label>
+          <input
+            type="text"
+            name="seriesName"
+            placeholder="Series Name"
+            value={book.seriesName}
+            onChange={handleChange}
+          />
+        </div>
 
-      <div style={{ marginBottom: '1rem' }}>
-        <button 
-          onClick={handleAddBook}
-          disabled={!isFormValid()}
-          style={{ 
-            padding: '0.5rem 1rem',
-            marginRight: '0.5rem',
-            backgroundColor: isFormValid() ? '#4CAF50' : '#cccccc',
-            color: 'white',
-            border: 'none',
-            borderRadius: '4px',
-            cursor: isFormValid() ? 'pointer' : 'not-allowed'
-          }}
-        >
-          {editingBook ? 'Update Book' : 'Add Book'}
-        </button>
-        <button 
-          onClick={resetForm}
-          style={{ 
-            padding: '0.5rem 1rem',
-            backgroundColor: '#f44336',
-            color: 'white',
-            border: 'none',
-            borderRadius: '4px',
-            cursor: 'pointer'
-          }}
-        >
-          Reset Form
-        </button>
-      </div>
+        <div className="form-group">
+          <label>Publication Date *</label>
+          <DatePicker
+            selected={book.publicationDate}
+            onChange={handleDateChange}
+            maxDate={new Date()}
+            dateFormat="yyyy-MM-dd"
+            placeholderText="Select publication date"
+            className="date-picker"
+          />
+        </div>
 
-      {error && <p style={{ color: 'red' }}>{error}</p>}
-      {success && <p style={{ color: 'green' }}>{success}</p>}
+        <div className="form-group">
+          <label>Edition *</label>
+          <select
+            name="edition"
+            value={book.edition}
+            onChange={handleChange}
+          >
+            <option value="">Select Edition</option>
+            {editions.map(edition => (
+              <option key={edition} value={edition}>{edition}</option>
+            ))}
+          </select>
+        </div>
+
+        <div className="form-group">
+          <label>Page Count *</label>
+          <input
+            type="number"
+            name="pages"
+            placeholder="Page Count"
+            value={book.pages}
+            onChange={handleChange}
+          />
+        </div>
+
+        <div className="form-group">
+          <button 
+            onClick={handleAddBook}
+            disabled={!isFormValid()}
+            style={{ 
+              padding: '0.75rem 1.5rem',
+              marginRight: '1rem',
+              backgroundColor: isFormValid() ? '#4CAF50' : '#cccccc',
+              color: 'white',
+              border: 'none',
+              borderRadius: '6px',
+              cursor: isFormValid() ? 'pointer' : 'not-allowed',
+              fontWeight: '600',
+              fontSize: '1rem'
+            }}
+          >
+            {editingBook ? 'Update Book' : 'Add Book'}
+          </button>
+          <button 
+            onClick={resetForm}
+            style={{ 
+              padding: '0.75rem 1.5rem',
+              backgroundColor: '#f44336',
+              color: 'white',
+              border: 'none',
+              borderRadius: '6px',
+              cursor: 'pointer',
+              fontWeight: '600',
+              fontSize: '1rem'
+            }}
+          >
+            Reset Form
+          </button>
+        </div>
+
+        {error && <p style={{ color: 'red', marginTop: '1rem' }}>{error}</p>}
+        {success && <p style={{ color: 'green', marginTop: '1rem' }}>{success}</p>}
+      </div>
 
       <h3>Book List</h3>
       <div className="book-shelf">

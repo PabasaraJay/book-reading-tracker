@@ -17,46 +17,71 @@ const QuoteCollection = () => {
   const [editingQuote, setEditingQuote] = useState(null);
   const [isFormValid, setIsFormValid] = useState(false);
   const [successMessage, setSuccessMessage] = useState('');
+  const [interactedFields, setInteractedFields] = useState(new Set());
 
   const MAX_QUOTE_LENGTH = 500;
   const MAX_NOTE_LENGTH = 200;
 
-  useEffect(() => {
+  const validateForm = () => {
+    if (interactedFields.size < 2) return;
+
     const newErrors = {};
     
-    if (!selectedBook) newErrors.book = 'Please select a book';
-    if (!pageNumber || pageNumber <= 0) {
+    if (!selectedBook && interactedFields.has('book')) newErrors.book = 'Please select a book';
+    if ((!pageNumber || pageNumber <= 0) && interactedFields.has('page')) {
       newErrors.page = 'Please enter a valid page number';
-    } else if (selectedBook) {
+    } else if (selectedBook && pageNumber && interactedFields.has('page')) {
       const book = sampleBooks.find(b => b.id === Number(selectedBook));
       if (pageNumber > book.totalPages) {
         newErrors.page = `Page number cannot exceed total pages (${book.totalPages})`;
       }
     }
-    if (!quoteText.trim()) newErrors.quote = 'Quote cannot be empty';
-    if (quoteText.length > MAX_QUOTE_LENGTH) {
+    if (!quoteText.trim() && interactedFields.has('quote')) newErrors.quote = 'Quote cannot be empty';
+    if (quoteText.length > MAX_QUOTE_LENGTH && interactedFields.has('quote')) {
       newErrors.quote = `Quote cannot exceed ${MAX_QUOTE_LENGTH} characters`;
     }
-    if (noteText.length > MAX_NOTE_LENGTH) {
+    if (noteText.length > MAX_NOTE_LENGTH && interactedFields.has('note')) {
       newErrors.note = `Note cannot exceed ${MAX_NOTE_LENGTH} characters`;
     }
     
     // Check for duplicate quotes
-    const isDuplicate = quotes.some(q => 
-      q.bookId === Number(selectedBook) && 
-      q.pageNumber === Number(pageNumber) && 
-      q.text.toLowerCase() === quoteText.toLowerCase() &&
-      q.id !== editingQuote?.id
-    );
-    if (isDuplicate) {
-      newErrors.duplicate = 'This quote already exists for this book and page';
+    if (interactedFields.has('quote') && interactedFields.has('book') && interactedFields.has('page')) {
+      const isDuplicate = quotes.some(q => 
+        q.bookId === Number(selectedBook) && 
+        q.pageNumber === Number(pageNumber) && 
+        q.text.toLowerCase() === quoteText.toLowerCase() &&
+        q.id !== editingQuote?.id
+      );
+      if (isDuplicate) {
+        newErrors.duplicate = 'This quote already exists for this book and page';
+      }
     }
 
     setErrors(newErrors);
     setIsFormValid(Object.keys(newErrors).length === 0);
-  }, [selectedBook, pageNumber, quoteText, noteText, quotes, editingQuote]);
+  };
+
+  useEffect(() => {
+    validateForm();
+  }, [selectedBook, pageNumber, quoteText, noteText, quotes, editingQuote, interactedFields]);
+
+  const handleInputChange = (setter, fieldName) => (e) => {
+    setInteractedFields(prev => new Set(prev).add(fieldName));
+    setter(e.target.value);
+  };
+
+  const handleDateChange = (date) => {
+    setInteractedFields(prev => new Set(prev).add('date'));
+    setQuoteDate(date);
+  };
 
   const handleAddQuote = () => {
+    if (interactedFields.size < 2) {
+      setInteractedFields(new Set(['book', 'page', 'quote']));
+      validateForm();
+      return;
+    }
+
     if (!isFormValid) return;
 
     const newQuote = {
@@ -82,13 +107,13 @@ const QuoteCollection = () => {
 
     resetForm();
     
-    // Clear success message after 5 seconds
     setTimeout(() => {
       setSuccessMessage('');
     }, 5000);
   };
 
   const handleEditQuote = (quote) => {
+    setInteractedFields(new Set());
     setEditingQuote(quote);
     setSelectedBook(quote.bookId.toString());
     setPageNumber(quote.pageNumber.toString());
@@ -113,6 +138,8 @@ const QuoteCollection = () => {
     setSentiment('neutral');
     setErrors({});
     setSuccessMessage('');
+    setInteractedFields(new Set());
+    setIsFormValid(false);
   };
 
   const filteredQuotes = quotes
@@ -152,7 +179,7 @@ const QuoteCollection = () => {
           <label>Select Book *</label>
           <select
             value={selectedBook}
-            onChange={(e) => setSelectedBook(e.target.value)}
+            onChange={handleInputChange(setSelectedBook, 'book')}
             className={errors.book ? 'error' : ''}
           >
             <option value="">Choose a book</option>
@@ -170,7 +197,7 @@ const QuoteCollection = () => {
           <input
             type="number"
             value={pageNumber}
-            onChange={(e) => setPageNumber(e.target.value)}
+            onChange={handleInputChange(setPageNumber, 'page')}
             min="1"
             max={selectedBook ? sampleBooks.find(b => b.id === Number(selectedBook)).totalPages : ''}
             className={errors.page ? 'error' : ''}
@@ -182,7 +209,7 @@ const QuoteCollection = () => {
           <label>Quote Date</label>
           <DatePicker
             selected={quoteDate}
-            onChange={date => setQuoteDate(date)}
+            onChange={handleDateChange}
             maxDate={new Date()}
             highlightDates={getHighlightedDates()}
             renderDayContents={(day, date) => {
@@ -201,7 +228,7 @@ const QuoteCollection = () => {
           <label>Quote Text *</label>
           <textarea
             value={quoteText}
-            onChange={(e) => setQuoteText(e.target.value)}
+            onChange={handleInputChange(setQuoteText, 'quote')}
             maxLength={MAX_QUOTE_LENGTH}
             className={errors.quote ? 'error' : ''}
             placeholder="Enter your quote..."
@@ -217,7 +244,7 @@ const QuoteCollection = () => {
           <label>Note (Optional)</label>
           <textarea
             value={noteText}
-            onChange={(e) => setNoteText(e.target.value)}
+            onChange={handleInputChange(setNoteText, 'note')}
             maxLength={MAX_NOTE_LENGTH}
             className={errors.note ? 'error' : ''}
             placeholder="Add a note about this quote..."
