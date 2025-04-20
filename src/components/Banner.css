@@ -1,0 +1,14 @@
+.banner {
+  background-color: #B8A088;
+  color: white;
+  padding: 1.5rem;
+  text-align: center;
+  margin-bottom: 2rem;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.banner h1 {
+  margin: 0;
+  font-size: 2rem;
+  font-weight: 600;
+} 

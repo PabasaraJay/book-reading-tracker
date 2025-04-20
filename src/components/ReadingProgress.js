@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { sampleBooks, readingDevices } from '../data/sampleBooks';
 import DatePicker from 'react-datepicker';
 import 'react-datepicker/dist/react-datepicker.css';
+import Banner from './Banner';
 import './ReadingProgress.css';
 
 const ReadingProgress = () => {
@@ -103,6 +104,7 @@ const ReadingProgress = () => {
 
   return (
     <div className="reading-progress" style={{ padding: '1rem', border: '1px solid #ccc', marginBottom: '1rem' }}>
+      <Banner title="Reading Progress" />
       <h2>Reading Progress</h2>
       
       <form onSubmit={handleSubmit}>

@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import DatePicker from 'react-datepicker';
 import 'react-datepicker/dist/react-datepicker.css';
 import { sampleBooks } from '../data/sampleBooks';
+import Banner from './Banner';
 import './QuoteCollection.css';
 
 const QuoteCollection = () => {
@@ -99,6 +100,7 @@ const QuoteCollection = () => {
 
   return (
     <div className="quote-collection">
+      <Banner title="Quote Collection" />
       <h2>Quote Collection</h2>
       
       <div className="quote-form">

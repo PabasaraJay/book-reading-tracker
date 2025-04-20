@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import DatePicker from 'react-datepicker';
 import 'react-datepicker/dist/react-datepicker.css';
+import Banner from './Banner';
 import './AddBook.css';
 
 const AddBook = () => {
@@ -183,6 +184,7 @@ const AddBook = () => {
 
   return (
     <div className="add-book-ui">
+      <Banner title="Add Book" />
       <h2>{editingBook ? 'Edit Book' : 'Add Book'}</h2>
 
       <div style={{ marginBottom: '0.5rem' }}>

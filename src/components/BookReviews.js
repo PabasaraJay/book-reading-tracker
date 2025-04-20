@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { sampleBooks } from '../data/sampleBooks';
+import Banner from './Banner';
 import './BookReviews.css';
 
 const BookReviews = () => {
@@ -86,6 +87,7 @@ const BookReviews = () => {
 
   return (
     <div className="book-reviews">
+      <Banner title="Book Reviews" />
       <h2>Book Reviews</h2>
       
       {/* Book Selection */}
