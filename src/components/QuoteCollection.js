@@ -11,11 +11,15 @@ const QuoteCollection = () => {
   const [pageNumber, setPageNumber] = useState('');
   const [quoteText, setQuoteText] = useState('');
   const [quoteDate, setQuoteDate] = useState(new Date());
+  const [noteText, setNoteText] = useState('');
+  const [sentiment, setSentiment] = useState('neutral');
   const [errors, setErrors] = useState({});
   const [editingQuote, setEditingQuote] = useState(null);
   const [isFormValid, setIsFormValid] = useState(false);
+  const [successMessage, setSuccessMessage] = useState('');
 
   const MAX_QUOTE_LENGTH = 500;
+  const MAX_NOTE_LENGTH = 200;
 
   useEffect(() => {
     const newErrors = {};
@@ -33,6 +37,9 @@ const QuoteCollection = () => {
     if (quoteText.length > MAX_QUOTE_LENGTH) {
       newErrors.quote = `Quote cannot exceed ${MAX_QUOTE_LENGTH} characters`;
     }
+    if (noteText.length > MAX_NOTE_LENGTH) {
+      newErrors.note = `Note cannot exceed ${MAX_NOTE_LENGTH} characters`;
+    }
     
     // Check for duplicate quotes
     const isDuplicate = quotes.some(q => 
@@ -47,7 +54,7 @@ const QuoteCollection = () => {
 
     setErrors(newErrors);
     setIsFormValid(Object.keys(newErrors).length === 0);
-  }, [selectedBook, pageNumber, quoteText, quotes, editingQuote]);
+  }, [selectedBook, pageNumber, quoteText, noteText, quotes, editingQuote]);
 
   const handleAddQuote = () => {
     if (!isFormValid) return;
@@ -57,19 +64,28 @@ const QuoteCollection = () => {
       bookId: Number(selectedBook),
       bookTitle: sampleBooks.find(b => b.id === Number(selectedBook)).title,
       text: quoteText,
+      note: noteText,
       pageNumber: Number(pageNumber),
       date: quoteDate,
-      timestamp: new Date()
+      timestamp: new Date(),
+      sentiment: sentiment
     };
 
     if (editingQuote) {
       setQuotes(quotes.map(q => q.id === editingQuote.id ? newQuote : q));
+      setSuccessMessage('Quote updated successfully!');
       setEditingQuote(null);
     } else {
       setQuotes([...quotes, newQuote]);
+      setSuccessMessage('Quote added successfully!');
     }
 
     resetForm();
+    
+    // Clear success message after 5 seconds
+    setTimeout(() => {
+      setSuccessMessage('');
+    }, 5000);
   };
 
   const handleEditQuote = (quote) => {
@@ -77,7 +93,9 @@ const QuoteCollection = () => {
     setSelectedBook(quote.bookId.toString());
     setPageNumber(quote.pageNumber.toString());
     setQuoteText(quote.text);
+    setNoteText(quote.note || '');
     setQuoteDate(new Date(quote.date));
+    setSentiment(quote.sentiment || 'neutral');
   };
 
   const handleDeleteQuote = (id) => {
@@ -90,20 +108,46 @@ const QuoteCollection = () => {
     setSelectedBook('');
     setPageNumber('');
     setQuoteText('');
+    setNoteText('');
     setQuoteDate(new Date());
+    setSentiment('neutral');
     setErrors({});
+    setSuccessMessage('');
   };
 
   const filteredQuotes = quotes
     .filter(q => selectedBook ? q.bookId === Number(selectedBook) : true)
     .sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp));
 
+  // Helper function to get dates with quotes
+  const getHighlightedDates = () => {
+    return quotes.map(quote => new Date(quote.date));
+  };
+
+  // Helper function to get notes for a specific date
+  const getNotesForDate = (date) => {
+    return quotes
+      .filter(quote => 
+        new Date(quote.date).toDateString() === date.toDateString()
+      )
+      .map(quote => ({
+        text: quote.text,
+        note: quote.note,
+        bookTitle: quote.bookTitle
+      }));
+  };
+
   return (
     <div className="quote-collection">
       <Banner title="Quote Collection" />
-      <h2>Quote Collection</h2>
+      <h2> Add Your Quote</h2>
       
       <div className="quote-form">
+        {successMessage && (
+          <div className="success-message">
+            {successMessage}
+          </div>
+        )}
         <div className="form-group">
           <label>Select Book *</label>
           <select
@@ -140,6 +184,16 @@ const QuoteCollection = () => {
             selected={quoteDate}
             onChange={date => setQuoteDate(date)}
             maxDate={new Date()}
+            highlightDates={getHighlightedDates()}
+            renderDayContents={(day, date) => {
+              const notes = getNotesForDate(date);
+              return (
+                <div className={`day-container ${notes.length > 0 ? 'has-notes' : ''}`}>
+                  {day}
+                  {notes.length > 0 && <span className="note-indicator">📝</span>}
+                </div>
+              );
+            }}
           />
         </div>
 
@@ -157,6 +211,54 @@ const QuoteCollection = () => {
           </div>
           {errors.quote && <span className="error-message">{errors.quote}</span>}
           {errors.duplicate && <span className="error-message">{errors.duplicate}</span>}
+        </div>
+
+        <div className="form-group">
+          <label>Note (Optional)</label>
+          <textarea
+            value={noteText}
+            onChange={(e) => setNoteText(e.target.value)}
+            maxLength={MAX_NOTE_LENGTH}
+            className={errors.note ? 'error' : ''}
+            placeholder="Add a note about this quote..."
+          />
+          <div className="char-counter">
+            {noteText.length}/{MAX_NOTE_LENGTH} characters
+          </div>
+          {errors.note && <span className="error-message">{errors.note}</span>}
+        </div>
+
+        <div className="form-group">
+          <label>Quote Sentiment</label>
+          <div className="sentiment-options">
+            <label className="radio-label">
+              <input
+                type="radio"
+                value="positive"
+                checked={sentiment === 'positive'}
+                onChange={(e) => setSentiment(e.target.value)}
+              />
+              Positive
+            </label>
+            <label className="radio-label">
+              <input
+                type="radio"
+                value="neutral"
+                checked={sentiment === 'neutral'}
+                onChange={(e) => setSentiment(e.target.value)}
+              />
+              Neutral
+            </label>
+            <label className="radio-label">
+              <input
+                type="radio"
+                value="negative"
+                checked={sentiment === 'negative'}
+                onChange={(e) => setSentiment(e.target.value)}
+              />
+              Negative
+            </label>
+          </div>
         </div>
 
         <div className="form-actions">
@@ -183,14 +285,20 @@ const QuoteCollection = () => {
         ) : (
           <ul>
             {filteredQuotes.map(quote => (
-              <li key={quote.id} className="quote-item">
+              <li key={quote.id} className={`quote-item ${quote.sentiment}`}>
                 <div className="quote-content">
                   <p className="quote-text">"{quote.text}"</p>
+                  {quote.note && (
+                    <p className="quote-note">📝 {quote.note}</p>
+                  )}
                   <p className="quote-meta">
                     <span className="book-title">{quote.bookTitle}</span>
                     <span className="page-number">Page {quote.pageNumber}</span>
                     <span className="date">
                       {new Date(quote.date).toLocaleDateString()}
+                    </span>
+                    <span className={`sentiment ${quote.sentiment}`}>
+                      {quote.sentiment.charAt(0).toUpperCase() + quote.sentiment.slice(1)}
                     </span>
                   </p>
                 </div>

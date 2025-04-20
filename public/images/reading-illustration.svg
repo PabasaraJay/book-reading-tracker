@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg width="240" height="240" viewBox="0 0 240 240" fill="none" xmlns="http://www.w3.org/2000/svg">
+    <!-- Background circle -->
+    <circle cx="120" cy="120" r="120" fill="#F3F9F8"/>
+    
+    <!-- Book -->
+    <path d="M60 80C60 71.7157 66.7157 65 75 65H165C173.284 65 180 71.7157 180 80V160C180 168.284 173.284 175 165 175H75C66.7157 175 60 168.284 60 160V80Z" fill="#2A9D8F"/>
+    
+    <!-- Book pages -->
+    <rect x="75" y="80" width="90" height="80" fill="white"/>
+    
+    <!-- Text lines -->
+    <rect x="85" y="95" width="70" height="4" rx="2" fill="#E0E0E0"/>
+    <rect x="85" y="105" width="50" height="4" rx="2" fill="#E0E0E0"/>
+    <rect x="85" y="115" width="60" height="4" rx="2" fill="#E0E0E0"/>
+    <rect x="85" y="125" width="40" height="4" rx="2" fill="#E0E0E0"/>
+    
+    <!-- Progress bar -->
+    <rect x="85" y="145" width="70" height="8" rx="4" fill="#F0F0F0"/>
+    <rect x="85" y="145" width="45" height="8" rx="4" fill="#2A9D8F"/>
+    
+    <!-- Decorative elements -->
+    <circle cx="190" cy="70" r="15" fill="#E9C46A" fill-opacity="0.3"/>
+    <circle cx="50" cy="170" r="20" fill="#2A9D8F" fill-opacity="0.2"/>
+</svg> 
