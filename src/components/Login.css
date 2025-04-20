@@ -38,18 +38,18 @@
   font-weight: 600;
 }
 
-.form-group {
+.login-form-group {
   margin-bottom: 1.5rem;
 }
 
-.form-group label {
+.login-form-group label {
   display: block;
   margin-bottom: 0.75rem;
   color: #34495e;
   font-weight: 500;
 }
 
-.form-group input {
+.login-form-group input {
   width: 90%;
   padding: 0.75rem 1rem;
   border: 2px solid #e0e0e0;
@@ -58,13 +58,13 @@
   transition: border-color 0.3s ease;
 }
 
-.form-group input:focus {
+.login-form-group input:focus {
   outline: none;
   border-color: #3498db;
   box-shadow: 0 0 0 3px rgba(52, 152, 219, 0.1);
 }
 
-button {
+.login-button {
   width: 100%;
   padding: 1rem;
   background-color: #3498db;
@@ -78,13 +78,13 @@ button {
   margin-top: 1rem;
 }
 
-button:hover {
+.login-button:hover {
   background-color: #2980b9;
   transform: translateY(-2px);
   box-shadow: 0 4px 12px rgba(52, 152, 219, 0.2);
 }
 
-.error-message {
+.login-error-message {
   color: #e74c3c;
   margin-bottom: 1.5rem;
   text-align: center;

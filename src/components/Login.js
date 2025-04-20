@@ -25,7 +25,7 @@ function Login() {
         <img src={logo} alt="Book Tracker Logo" className="login-logo" />
         <h2>Welcome Back</h2>
         <form onSubmit={handleSubmit}>
-          <div className="form-group">
+          <div className="login-form-group">
             <label htmlFor="username">Username:</label>
             <input
               type="text"
@@ -36,7 +36,7 @@ function Login() {
               placeholder="Enter your username"
             />
           </div>
-          <div className="form-group">
+          <div className="login-form-group">
             <label htmlFor="password">Password:</label>
             <input
               type="password"
@@ -47,8 +47,8 @@ function Login() {
               placeholder="Enter your password"
             />
           </div>
-          {error && <div className="error-message">{error}</div>}
-          <button type="submit">Login</button>
+          {error && <div className="login-error-message">{error}</div>}
+          <button type="submit" className="login-button">Login</button>
         </form>
       </div>
     </div>
