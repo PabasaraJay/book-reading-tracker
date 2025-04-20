@@ -20,20 +20,39 @@ const BookReviews = () => {
   const [sortBy, setSortBy] = useState('recent');
   const [searchTerm, setSearchTerm] = useState('');
   const [error, setError] = useState('');
+  const [success, setSuccess] = useState('');
+  const [editingReview, setEditingReview] = useState(null);
+  const [editForm, setEditForm] = useState({
+    rating: 0,
+    comment: ''
+  });
+  const [editErrors, setEditErrors] = useState({});
 
   const MAX_CHARACTERS = 250;
 
+  const validateReview = (review) => {
+    const errors = {};
+    if (!review.rating || review.rating < 1 || review.rating > 5) {
+      errors.rating = 'Please select a valid rating (1-5)';
+    }
+    if (!review.comment.trim()) {
+      errors.comment = 'Review cannot be blank';
+    }
+    if (review.comment.length > MAX_CHARACTERS) {
+      errors.comment = `Review cannot exceed ${MAX_CHARACTERS} characters`;
+    }
+    return errors;
+  };
+
   const handleAddReview = () => {
+    const errors = validateReview(newReview);
+    if (Object.keys(errors).length > 0) {
+      setError(Object.values(errors)[0]);
+      return;
+    }
+
     if (!selectedBook) {
       setError('Please select a book first');
-      return;
-    }
-    if (newReview.rating === 0) {
-      setError('Please select a rating');
-      return;
-    }
-    if (!newReview.comment.trim()) {
-      setError('Review cannot be blank');
       return;
     }
 
@@ -48,25 +67,62 @@ const BookReviews = () => {
     setReviews([...reviews, review]);
     setNewReview({ rating: 0, comment: '', userId: currentUserId });
     setError('');
+    setSuccess(`Your review for "${selectedBook.title}" has been added successfully.`);
+    // Clear success message after 3 seconds
+    setTimeout(() => setSuccess(''), 3000);
   };
 
-  const handleEditReview = (reviewId, updatedReview) => {
+  const handleEditReview = (reviewId) => {
+    const reviewToEdit = reviews.find(review => review.id === reviewId);
+    if (reviewToEdit) {
+      setEditingReview(reviewToEdit);
+      setEditForm({
+        rating: reviewToEdit.rating,
+        comment: reviewToEdit.comment
+      });
+      setEditErrors({});
+    }
+  };
+
+  const handleUpdateReview = () => {
+    const errors = validateReview(editForm);
+    if (Object.keys(errors).length > 0) {
+      setEditErrors(errors);
+      return;
+    }
+
     setReviews(reviews.map(review => 
-      review.id === reviewId ? { ...review, ...updatedReview } : review
+      review.id === editingReview.id 
+        ? { 
+            ...review, 
+            ...editForm,
+            timestamp: new Date().toISOString()
+          } 
+        : review
     ));
+    setEditingReview(null);
+    setEditForm({ rating: 0, comment: '' });
+    setEditErrors({});
   };
 
   const handleDeleteReview = (reviewId) => {
-    setReviews(reviews.filter(review => review.id !== reviewId));
+    const reviewToDelete = reviews.find(review => review.id === reviewId);
+    if (reviewToDelete) {
+      setReviews(reviews.filter(review => review.id !== reviewId));
+      setSuccess(`Your review for "${reviewToDelete.bookTitle}" has been deleted successfully.`);
+      // Clear success message after 3 seconds
+      setTimeout(() => setSuccess(''), 3000);
+    }
   };
 
   const filteredReviews = reviews
-    .filter(review => 
-      selectedBook ? review.bookId === selectedBook.id : true
-    )
-    .filter(review => 
-      review.comment.toLowerCase().includes(searchTerm.toLowerCase())
-    )
+    .filter(review => {
+      const searchLower = searchTerm.toLowerCase();
+      return (
+        review.comment.toLowerCase().includes(searchLower) ||
+        review.bookTitle.toLowerCase().includes(searchLower)
+      );
+    })
     .sort((a, b) => {
       switch (sortBy) {
         case 'highest':
@@ -88,8 +144,11 @@ const BookReviews = () => {
   return (
     <div className="book-reviews">
       <Banner title="Book Reviews" />
-      <h2>Book Reviews</h2>
+      <h2>Add Your Reviews</h2>
       
+      {/* Success Message */}
+      {success && <p className="success-message">{success}</p>}
+
       {/* Book Selection */}
       <div className="book-selection">
         <select
@@ -178,27 +237,60 @@ const BookReviews = () => {
                   key={review.id}
                   className={`review-item ${review.userId === currentUserId ? 'user-review' : ''}`}
                 >
-                  <p>Rating: {'⭐'.repeat(review.rating)}</p>
-                  <p>{review.comment}</p>
-                  <p className="review-date">
-                    {new Date(review.timestamp).toLocaleDateString()}
-                  </p>
-                  {review.userId === currentUserId && (
-                    <div className="review-actions">
-                      <button
-                        onClick={() => handleEditReview(review.id, {
-                          comment: prompt('Edit your review:', review.comment),
-                          rating: Number(prompt('Edit your rating (1-5):', review.rating))
-                        })}
-                      >
-                        Edit
-                      </button>
-                      <button
-                        onClick={() => handleDeleteReview(review.id)}
-                      >
-                        Delete
-                      </button>
+                  {editingReview?.id === review.id ? (
+                    <div className="edit-review-form">
+                      <h4>{review.bookTitle}</h4>
+                      <div className="rating-stars">
+                        Rating:
+                        {[1, 2, 3, 4, 5].map(star => (
+                          <span
+                            key={star}
+                            onClick={() => setEditForm({ ...editForm, rating: star })}
+                            onMouseEnter={() => setEditForm({ ...editForm, rating: star })}
+                          >
+                            {star <= editForm.rating ? '⭐' : '☆'}
+                          </span>
+                        ))}
+                      </div>
+                      {editErrors.rating && <p className="error-message">{editErrors.rating}</p>}
+                      <textarea
+                        value={editForm.comment}
+                        onChange={(e) => {
+                          if (e.target.value.length <= MAX_CHARACTERS) {
+                            setEditForm({ ...editForm, comment: e.target.value });
+                          }
+                        }}
+                        placeholder="Your review..."
+                        className="review-textarea"
+                      />
+                      {editErrors.comment && <p className="error-message">{editErrors.comment}</p>}
+                      <div className="characters-remaining">
+                        Characters remaining: {MAX_CHARACTERS - editForm.comment.length}
+                      </div>
+                      <div className="review-actions">
+                        <button onClick={handleUpdateReview}>Update Review</button>
+                        <button onClick={() => {
+                          setEditingReview(null);
+                          setEditForm({ rating: 0, comment: '' });
+                          setEditErrors({});
+                        }}>Cancel</button>
+                      </div>
                     </div>
+                  ) : (
+                    <>
+                      <h4>{review.bookTitle}</h4>
+                      <p>Rating: {'⭐'.repeat(review.rating)}</p>
+                      <p>{review.comment}</p>
+                      <p className="review-date">
+                        {new Date(review.timestamp).toLocaleDateString()}
+                      </p>
+                      {review.userId === currentUserId && (
+                        <div className="review-actions">
+                          <button onClick={() => handleEditReview(review.id)}>Edit</button>
+                          <button onClick={() => handleDeleteReview(review.id)}>Delete</button>
+                        </div>
+                      )}
+                    </>
                   )}
                 </div>
               ))

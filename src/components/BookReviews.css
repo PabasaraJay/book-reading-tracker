@@ -15,7 +15,13 @@
 }
 
 .book-title {
-  margin-bottom: 1rem;
+  text-align: center;
+  margin: 1rem 0;
+}
+
+.book-title h3 {
+  margin: 0;
+  padding: 0;
 }
 
 .review-input {
@@ -49,7 +55,51 @@
 }
 
 .error-message {
-  color: red;
+  color: #d32f2f;
+  background-color: #ffebee;
+  padding: 0.75rem;
+  border: 1px solid #ef9a9a;
+  border-radius: 4px;
+  margin: 0.5rem 0;
+  font-weight: 500;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.error-message::before {
+  content: "⚠️";
+  font-size: 1.2rem;
+}
+
+.success-message {
+  color: #2e7d32;
+  background-color: #e8f5e9;
+  padding: 0.75rem;
+  border: 1px solid #a5d6a7;
+  border-radius: 4px;
+  margin: 0.5rem 0;
+  font-weight: 500;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  animation: fadeIn 1.0s ease-in;
+}
+
+.success-message::before {
+  content: "✓";
+  font-size: 1.2rem;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(-10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }
 
 .review-item {
@@ -70,4 +120,62 @@
 
 .review-actions button {
   margin-left: 0.5rem;
+}
+
+.edit-review-form {
+  padding: 1rem;
+  background-color: #f8f9fa;
+  border: 1px solid #dee2e6;
+  border-radius: 4px;
+  margin-bottom: 1rem;
+}
+
+.edit-review-form .rating-stars {
+  margin: 1rem 0;
+}
+
+.edit-review-form .rating-stars span {
+  cursor: pointer;
+  font-size: 1.5rem;
+  margin-right: 0.5rem;
+}
+
+.edit-review-form .review-textarea {
+  width: 100%;
+  min-height: 100px;
+  padding: 0.5rem;
+  margin: 0.5rem 0;
+  border: 1px solid #ced4da;
+  border-radius: 4px;
+  resize: vertical;
+}
+
+.edit-review-form .review-actions {
+  display: flex;
+  gap: 0.5rem;
+  margin-top: 1rem;
+}
+
+.edit-review-form .review-actions button {
+  padding: 0.5rem 1rem;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  font-weight: 500;
+}
+
+.edit-review-form .review-actions button:first-child {
+  background-color: #4CAF50;
+  color: white;
+}
+
+.edit-review-form .review-actions button:last-child {
+  background-color: #f44336;
+  color: white;
+}
+
+.edit-review-form .error-message {
+  color: #d32f2f;
+  font-size: 0.875rem;
+  margin: 0.25rem 0;
 } 
