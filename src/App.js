@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
 import HomePage from './components/HomePage';
 import AddBook from './components/AddBook';
@@ -14,6 +14,11 @@ const PrivateRoute = ({ children }) => {
 };
 
 function App() {
+  useEffect(() => {
+    // Clear authentication state when app starts
+    localStorage.removeItem('isAuthenticated');
+  }, []);
+
   return (
     <Router>
       <div className="App">
@@ -59,6 +64,7 @@ function App() {
               </PrivateRoute>
             }
           />
+          <Route path="*" element={<Navigate to="/login" />} />
         </Routes>
       </div>
     </Router>
