@@ -1,15 +1,13 @@
 import React, { useState, useEffect } from 'react';
-import { sampleBooks } from '../data/sampleBooks';
 import Banner from './Banner';
 import './BookReviews.css';
+import { reviewsApi, booksApi } from '../services/api';
 
 const BookReviews = () => {
   // Mock user ID for demonstration
   const currentUserId = 'user123';
   
-  // State for books (now using sampleBooks)
-  const [books, setBooks] = useState(sampleBooks);
-
+  const [books, setBooks] = useState([]);
   const [selectedBook, setSelectedBook] = useState(null);
   const [reviews, setReviews] = useState([]);
   const [newReview, setNewReview] = useState({
@@ -27,8 +25,35 @@ const BookReviews = () => {
     comment: ''
   });
   const [editErrors, setEditErrors] = useState({});
+  const [loading, setLoading] = useState(false);
 
   const MAX_CHARACTERS = 250;
+
+  useEffect(() => {
+    fetchBooks();
+    fetchReviews();
+  }, []);
+
+  const fetchBooks = async () => {
+    try {
+      const response = await booksApi.getAll();
+      setBooks(response.data);
+    } catch (error) {
+      setError('Failed to fetch books');
+    }
+  };
+
+  const fetchReviews = async () => {
+    try {
+      setLoading(true);
+      const response = await reviewsApi.getAll();
+      setReviews(response.data);
+    } catch (error) {
+      setError('Failed to fetch reviews');
+    } finally {
+      setLoading(false);
+    }
+  };
 
   const validateReview = (review) => {
     const errors = {};
@@ -44,7 +69,7 @@ const BookReviews = () => {
     return errors;
   };
 
-  const handleAddReview = () => {
+  const handleAddReview = async () => {
     const errors = validateReview(newReview);
     if (Object.keys(errors).length > 0) {
       setError(Object.values(errors)[0]);
@@ -56,62 +81,75 @@ const BookReviews = () => {
       return;
     }
 
-    const review = {
-      id: Date.now(),
-      bookId: selectedBook.id,
-      bookTitle: selectedBook.title,
-      ...newReview,
-      timestamp: new Date().toISOString()
-    };
+    try {
+      setLoading(true);
+      const reviewData = {
+        bookId: selectedBook._id,
+        userId: currentUserId,
+        rating: newReview.rating,
+        comment: newReview.comment
+      };
 
-    setReviews([...reviews, review]);
-    setNewReview({ rating: 0, comment: '', userId: currentUserId });
-    setError('');
-    setSuccess(`Your review for "${selectedBook.title}" has been added successfully.`);
-    // Clear success message after 3 seconds
-    setTimeout(() => setSuccess(''), 3000);
-  };
-
-  const handleEditReview = (reviewId) => {
-    const reviewToEdit = reviews.find(review => review.id === reviewId);
-    if (reviewToEdit) {
-      setEditingReview(reviewToEdit);
-      setEditForm({
-        rating: reviewToEdit.rating,
-        comment: reviewToEdit.comment
-      });
-      setEditErrors({});
+      const response = await reviewsApi.create(reviewData);
+      setReviews([...reviews, response.data]);
+      setNewReview({ rating: 0, comment: '', userId: currentUserId });
+      setError('');
+      setSuccess(`Your review for "${selectedBook.title}" has been added successfully.`);
+      setTimeout(() => setSuccess(''), 3000);
+    } catch (error) {
+      setError('Failed to add review');
+    } finally {
+      setLoading(false);
     }
   };
 
-  const handleUpdateReview = () => {
+  const handleEditReview = (review) => {
+    setEditingReview(review);
+    setEditForm({
+      rating: review.rating,
+      comment: review.comment
+    });
+    setEditErrors({});
+  };
+
+  const handleUpdateReview = async () => {
     const errors = validateReview(editForm);
     if (Object.keys(errors).length > 0) {
       setEditErrors(errors);
       return;
     }
 
-    setReviews(reviews.map(review => 
-      review.id === editingReview.id 
-        ? { 
-            ...review, 
-            ...editForm,
-            timestamp: new Date().toISOString()
-          } 
-        : review
-    ));
-    setEditingReview(null);
-    setEditForm({ rating: 0, comment: '' });
-    setEditErrors({});
+    try {
+      setLoading(true);
+      const response = await reviewsApi.update(editingReview._id, editForm);
+      setReviews(reviews.map(review => 
+        review._id === editingReview._id ? response.data : review
+      ));
+      setEditingReview(null);
+      setEditForm({ rating: 0, comment: '' });
+      setEditErrors({});
+      setSuccess('Review updated successfully!');
+      setTimeout(() => setSuccess(''), 3000);
+    } catch (error) {
+      setError('Failed to update review');
+    } finally {
+      setLoading(false);
+    }
   };
 
-  const handleDeleteReview = (reviewId) => {
-    const reviewToDelete = reviews.find(review => review.id === reviewId);
-    if (reviewToDelete) {
-      setReviews(reviews.filter(review => review.id !== reviewId));
-      setSuccess(`Your review for "${reviewToDelete.bookTitle}" has been deleted successfully.`);
-      // Clear success message after 3 seconds
-      setTimeout(() => setSuccess(''), 3000);
+  const handleDeleteReview = async (id) => {
+    if (window.confirm('Are you sure you want to delete this review?')) {
+      try {
+        setLoading(true);
+        await reviewsApi.delete(id);
+        setReviews(reviews.filter(review => review._id !== id));
+        setSuccess('Review deleted successfully!');
+        setTimeout(() => setSuccess(''), 3000);
+      } catch (error) {
+        setError('Failed to delete review');
+      } finally {
+        setLoading(false);
+      }
     }
   };
 
@@ -120,7 +158,7 @@ const BookReviews = () => {
       const searchLower = searchTerm.toLowerCase();
       return (
         review.comment.toLowerCase().includes(searchLower) ||
-        review.bookTitle.toLowerCase().includes(searchLower)
+        review.bookId.title.toLowerCase().includes(searchLower)
       );
     })
     .sort((a, b) => {
@@ -130,15 +168,15 @@ const BookReviews = () => {
         case 'lowest':
           return a.rating - b.rating;
         default:
-          return new Date(b.timestamp) - new Date(a.timestamp);
+          return new Date(b.createdAt) - new Date(a.createdAt);
       }
     });
 
   const averageRating = selectedBook
     ? reviews
-        .filter(review => review.bookId === selectedBook.id)
+        .filter(review => review.bookId._id === selectedBook._id)
         .reduce((acc, review) => acc + review.rating, 0) / 
-        reviews.filter(review => review.bookId === selectedBook.id).length
+        reviews.filter(review => review.bookId._id === selectedBook._id).length
     : 0;
 
   return (
@@ -146,22 +184,22 @@ const BookReviews = () => {
       <Banner title="Book Reviews" />
       <h2>Add Your Reviews</h2>
       
-      {/* Success Message */}
+      {loading && <div className="loading-spinner">Loading...</div>}
       {success && <p className="success-message">{success}</p>}
 
       {/* Book Selection */}
       <div className="book-selection">
         <select
-          value={selectedBook?.id || ''}
+          value={selectedBook?._id || ''}
           onChange={(e) => {
-            const book = books.find(b => b.id === Number(e.target.value));
+            const book = books.find(b => b._id === e.target.value);
             setSelectedBook(book);
             setError('');
           }}
         >
           <option value="">Select a book...</option>
           {books.map(book => (
-            <option key={book.id} value={book.id}>
+            <option key={book._id} value={book._id}>
               {book.title}
             </option>
           ))}
@@ -234,12 +272,12 @@ const BookReviews = () => {
             ) : (
               filteredReviews.map((review) => (
                 <div
-                  key={review.id}
+                  key={review._id}
                   className={`review-item ${review.userId === currentUserId ? 'user-review' : ''}`}
                 >
-                  {editingReview?.id === review.id ? (
+                  {editingReview?._id === review._id ? (
                     <div className="edit-review-form">
-                      <h4>{review.bookTitle}</h4>
+                      <h4>{review.bookId.title}</h4>
                       <div className="rating-stars">
                         Rating:
                         {[1, 2, 3, 4, 5].map(star => (
@@ -264,9 +302,6 @@ const BookReviews = () => {
                         className="review-textarea"
                       />
                       {editErrors.comment && <p className="error-message">{editErrors.comment}</p>}
-                      <div className="characters-remaining">
-                        Characters remaining: {MAX_CHARACTERS - editForm.comment.length}
-                      </div>
                       <div className="review-actions">
                         <button onClick={handleUpdateReview}>Update Review</button>
                         <button onClick={() => {
@@ -278,16 +313,16 @@ const BookReviews = () => {
                     </div>
                   ) : (
                     <>
-                      <h4>{review.bookTitle}</h4>
+                      <h4>{review.bookId.title}</h4>
                       <p>Rating: {'⭐'.repeat(review.rating)}</p>
                       <p>{review.comment}</p>
                       <p className="review-date">
-                        {new Date(review.timestamp).toLocaleDateString()}
+                        {new Date(review.createdAt).toLocaleDateString()}
                       </p>
                       {review.userId === currentUserId && (
                         <div className="review-actions">
-                          <button onClick={() => handleEditReview(review.id)}>Edit</button>
-                          <button onClick={() => handleDeleteReview(review.id)}>Delete</button>
+                          <button onClick={() => handleEditReview(review)}>Edit</button>
+                          <button onClick={() => handleDeleteReview(review._id)}>Delete</button>
                         </div>
                       )}
                     </>

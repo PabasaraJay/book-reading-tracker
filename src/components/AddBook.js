@@ -1,7 +1,8 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import DatePicker from 'react-datepicker';
 import 'react-datepicker/dist/react-datepicker.css';
 import Banner from './Banner';
+import { booksApi } from '../services/api';
 import './AddBook.css';
 
 const AddBook = () => {
@@ -20,6 +21,7 @@ const AddBook = () => {
   const [error, setError] = useState('');
   const [success, setSuccess] = useState('');
   const [editingBook, setEditingBook] = useState(null);
+  const [loading, setLoading] = useState(false);
 
   const genres = [
     'Short Story',
@@ -57,6 +59,22 @@ const AddBook = () => {
     return date <= today;
   };
 
+  useEffect(() => {
+    fetchBooks();
+  }, []);
+
+  const fetchBooks = async () => {
+    try {
+      setLoading(true);
+      const response = await booksApi.getAll();
+      setBooks(response.data);
+    } catch (error) {
+      setError('Failed to fetch books. Please try again.');
+    } finally {
+      setLoading(false);
+    }
+  };
+
   const handleChange = (e) => {
     const { name, value } = e.target;
     setBook({ ...book, [name]: value });
@@ -70,7 +88,7 @@ const AddBook = () => {
     setSuccess('');
   };
 
-  const handleAddBook = () => {
+  const handleAddBook = async () => {
     // Reset messages
     setError('');
     setSuccess('');
@@ -117,17 +135,26 @@ const AddBook = () => {
       return;
     }
 
-    if (editingBook) {
-      // Update existing book
-      setBooks(books.map(b => b.id === editingBook.id ? { ...book, id: editingBook.id } : b));
-      setSuccess('Book updated successfully!');
-      setEditingBook(null);
-    } else {
-      // Add new book
-      setBooks([...books, { ...book, id: Date.now() }]);
-      setSuccess('Book added successfully!');
+    try {
+      setLoading(true);
+      if (editingBook) {
+        // Update existing book
+        const response = await booksApi.update(editingBook._id, book);
+        setBooks(books.map(b => b._id === editingBook._id ? response.data : b));
+        setSuccess('Book updated successfully!');
+        setEditingBook(null);
+      } else {
+        // Add new book
+        const response = await booksApi.create(book);
+        setBooks([...books, response.data]);
+        setSuccess('Book added successfully!');
+      }
+      resetForm();
+    } catch (error) {
+      setError(error.response?.data?.message || 'Failed to save book. Please try again.');
+    } finally {
+      setLoading(false);
     }
-    resetForm();
   };
 
   const handleEditBook = (bookToEdit) => {
@@ -137,17 +164,25 @@ const AddBook = () => {
       author: bookToEdit.author,
       genre: bookToEdit.genre,
       language: bookToEdit.language,
-      seriesName: bookToEdit.seriesName,
+      seriesName: bookToEdit.seriesName || '',
       publicationDate: bookToEdit.publicationDate instanceof Date ? bookToEdit.publicationDate : new Date(bookToEdit.publicationDate),
       edition: bookToEdit.edition,
-      pages: bookToEdit.pages
+      pages: bookToEdit.pages.toString()
     });
   };
 
-  const handleDeleteBook = (id) => {
+  const handleDeleteBook = async (id) => {
     if (window.confirm('Are you sure you want to delete this book?')) {
-      setBooks(books.filter(b => b.id !== id));
-      setSuccess('Book deleted successfully!');
+      try {
+        setLoading(true);
+        await booksApi.delete(id);
+        setBooks(books.filter(b => b._id !== id));
+        setSuccess('Book deleted successfully!');
+      } catch (error) {
+        setError('Failed to delete book. Please try again.');
+      } finally {
+        setLoading(false);
+      }
     }
   };
 
@@ -156,7 +191,7 @@ const AddBook = () => {
       title: '',
       author: '',
       genre: '',
-      language: 'English',
+      language: '',
       seriesName: '',
       publicationDate: null,
       edition: '',
@@ -188,6 +223,8 @@ const AddBook = () => {
       <div className="form-card">
         <h2>{editingBook ? 'Edit Book' : 'Add Your Favorite Books Here'}</h2>
 
+        {loading && <div className="loading-spinner">Loading...</div>}
+        
         <div className="form-group">
           <label>Title *</label>
           <input
@@ -340,7 +377,7 @@ const AddBook = () => {
       <h3>Book List</h3>
       <div className="book-shelf">
         {books.map((b) => (
-          <div key={b.id} className="book-card">
+          <div key={b._id} className="book-card">
             <div className="book-cover">
               <div className="book-spine"></div>
               <div className="book-title">{b.title}</div>
@@ -350,7 +387,7 @@ const AddBook = () => {
               <p><strong>Genre:</strong> {b.genre}</p>
               <p><strong>Language:</strong> {b.language}</p>
               {b.seriesName && <p><strong>Series:</strong> {b.seriesName}</p>}
-              <p><strong>Published:</strong> {b.publicationDate ? new Date(b.publicationDate).toLocaleDateString() : '-'}</p>
+              <p><strong>Published:</strong> {new Date(b.publicationDate).toLocaleDateString()}</p>
               <p><strong>Edition:</strong> {b.edition}</p>
               <p><strong>Pages:</strong> {b.pages}</p>
               <div className="book-actions">
@@ -361,7 +398,7 @@ const AddBook = () => {
                   Edit
                 </button>
                 <button 
-                  onClick={() => handleDeleteBook(b.id)}
+                  onClick={() => handleDeleteBook(b._id)}
                   className="delete-button"
                 >
                   Delete

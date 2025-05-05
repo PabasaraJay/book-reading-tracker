@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import DatePicker from 'react-datepicker';
 import 'react-datepicker/dist/react-datepicker.css';
 import './ReadingProgress.css';
-import { sampleBooks, readingDevices } from '../data/sampleBooks';
+import { readingProgressApi, booksApi } from '../services/api';
 
 const Toast = ({ message, type, onClose }) => {
   useEffect(() => {
@@ -42,11 +42,47 @@ const ReadingProgress = () => {
   });
 
   const [entries, setEntries] = useState([]);
+  const [books, setBooks] = useState([]);
   const [selectedBook, setSelectedBook] = useState(null);
   const [editingEntry, setEditingEntry] = useState(null);
   const [searchTerm, setSearchTerm] = useState('');
   const [filterBookId, setFilterBookId] = useState('');
   const [toast, setToast] = useState(null);
+  const [loading, setLoading] = useState(false);
+
+  const readingDevices = [
+    { id: 'paper', label: 'Physical Book' },
+    { id: 'ebook', label: 'E-Book' },
+    { id: 'audiobook', label: 'Audiobook' },
+    { id: 'tablet', label: 'Tablet' },
+    { id: 'phone', label: 'Phone' }
+  ];
+
+  useEffect(() => {
+    fetchEntries();
+    fetchBooks();
+  }, []);
+
+  const fetchBooks = async () => {
+    try {
+      const response = await booksApi.getAll();
+      setBooks(response.data);
+    } catch (error) {
+      showToast('Failed to fetch books', 'error');
+    }
+  };
+
+  const fetchEntries = async () => {
+    try {
+      setLoading(true);
+      const response = await readingProgressApi.getAll();
+      setEntries(response.data);
+    } catch (error) {
+      showToast('Failed to fetch reading progress entries', 'error');
+    } finally {
+      setLoading(false);
+    }
+  };
 
   // Update form's current page when selecting a book
   useEffect(() => {
@@ -91,8 +127,8 @@ const ReadingProgress = () => {
       newErrors.currentPage = 'Current page must be greater than 0';
     }
 
-    if (selectedBook && formData.currentPage > selectedBook.totalPages) {
-      newErrors.currentPage = `Cannot exceed total pages (${selectedBook.totalPages})`;
+    if (selectedBook && formData.currentPage > selectedBook.pages) {
+      newErrors.currentPage = `Cannot exceed total pages (${selectedBook.pages})`;
     }
 
     const latestPage = getLatestPage();
@@ -112,102 +148,76 @@ const ReadingProgress = () => {
     setToast({ message, type });
   };
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
     
     if (validateForm()) {
-      const timestamp = new Date();
-      
-      if (editingEntry) {
-        // Update existing entry
-        const updatedEntries = entries.map(entry => 
-          entry.id === editingEntry.id 
-            ? { 
-                ...formData, 
-                id: entry.id, 
-                bookTitle: selectedBook?.title,
-                timestamp: entry.timestamp
-              }
-            : entry
-        );
-        setEntries(updatedEntries);
+      try {
+        setLoading(true);
+        if (editingEntry) {
+          // Update existing entry
+          const response = await readingProgressApi.update(editingEntry._id, formData);
+          setEntries(entries.map(entry => 
+            entry._id === editingEntry._id ? response.data : entry
+          ));
+          showToast('Reading progress updated successfully!', 'success');
+        } else {
+          // Create new entry
+          const response = await readingProgressApi.create(formData);
+          setEntries([...entries, response.data]);
+          showToast('Reading progress saved successfully!', 'success');
+        }
+        
+        // Reset the form
+        setFormData({
+          bookId: '',
+          startDate: new Date(),
+          targetDate: new Date(),
+          currentPage: 0,
+          readingDevice: 'paper',
+          comment: '',
+        });
+        setSelectedBook(null);
         setEditingEntry(null);
-        showToast('Reading progress updated successfully!', 'success');
-      } else {
-        // Create new entry
-        const newEntry = {
-          ...formData,
-          id: Date.now(),
-          bookTitle: selectedBook?.title,
-          timestamp
-        };
-        setEntries([...entries, newEntry]);
-        showToast('Reading progress saved successfully!', 'success');
+      } catch (error) {
+        showToast(error.response?.data?.message || 'Failed to save reading progress', 'error');
+      } finally {
+        setLoading(false);
       }
-      
-      // Reset the form
-      setFormData({
-        bookId: '',
-        startDate: new Date(),
-        targetDate: new Date(),
-        currentPage: 0,
-        readingDevice: 'paper',
-        comment: '',
-      });
-      setSelectedBook(null);
     }
   };
 
   const handleEdit = (entry) => {
-    // Find the book associated with the entry
-    const book = sampleBooks.find(b => b.id.toString() === entry.bookId);
-    if (!book) return;
-
-    // Set the selected book
-    setSelectedBook(book);
-
-    // Set the form data with the entry's values
+    setSelectedBook(entry.bookId);
     setFormData({
-      bookId: entry.bookId,
+      bookId: entry.bookId._id,
       startDate: new Date(entry.startDate),
       targetDate: new Date(entry.targetDate),
       currentPage: entry.currentPage,
       readingDevice: entry.readingDevice,
       comment: entry.comment || '',
     });
-
-    // Set the editing entry
     setEditingEntry(entry);
   };
 
-  const handleDelete = (entryId) => {
+  const handleDelete = async (id) => {
     if (window.confirm('Are you sure you want to delete this entry?')) {
-      setEntries(entries.filter(entry => entry.id !== entryId));
-      showToast('Entry deleted successfully!', 'success');
-      
-      // Reset current page to the latest remaining entry
-      const remainingEntries = entries.filter(entry => entry.id !== entryId);
-      const latestEntry = remainingEntries
-        .filter(entry => entry.bookId === formData.bookId)
-        .sort((a, b) => b.timestamp - a.timestamp)[0];
-      
-      if (latestEntry) {
-        setFormData(prev => ({
-          ...prev,
-          currentPage: latestEntry.currentPage
-        }));
-      } else {
-        setFormData(prev => ({
-          ...prev,
-          currentPage: 0
-        }));
+      try {
+        setLoading(true);
+        await readingProgressApi.delete(id);
+        setEntries(entries.filter(entry => entry._id !== id));
+        showToast('Entry deleted successfully!', 'success');
+      } catch (error) {
+        showToast('Failed to delete entry', 'error');
+      } finally {
+        setLoading(false);
       }
     }
   };
 
   const handleBookSelect = (e) => {
     const bookId = e.target.value;
-    const book = sampleBooks.find(b => b.id.toString() === bookId);
+    const book = books.find(b => b._id === bookId);
     setSelectedBook(book);
     setFormData(prev => ({
       ...prev,
@@ -227,21 +237,21 @@ const ReadingProgress = () => {
   const getBookProgress = () => {
     if (!selectedBook) return [];
     return entries
-      .filter(entry => entry.bookId === formData.bookId)
-      .sort((a, b) => b.timestamp - a.timestamp); // Sort by timestamp, newest first
+      .filter(entry => entry.bookId._id === formData.bookId)
+      .sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
   };
 
   const getLatestPage = () => {
     if (!selectedBook) return 0;
     const bookEntries = getBookProgress();
     if (bookEntries.length === 0) return 0;
-    return bookEntries[0].currentPage; // Return the most recent entry's page
+    return bookEntries[0].currentPage;
   };
 
   const getRemainingPages = () => {
     if (!selectedBook) return 0;
     const currentPage = getLatestPage();
-    return selectedBook.totalPages - currentPage;
+    return selectedBook.pages - currentPage;
   };
 
   const formatDate = (date) => {
@@ -257,15 +267,15 @@ const ReadingProgress = () => {
 
   const filteredEntries = entries
     .filter(entry => {
-      const matchesSearch = entry.bookTitle.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      const matchesSearch = entry.bookId.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
                           entry.comment?.toLowerCase().includes(searchTerm.toLowerCase());
-      const matchesFilter = !filterBookId || entry.bookId === filterBookId;
+      const matchesFilter = !filterBookId || entry.bookId._id === filterBookId;
       return matchesSearch && matchesFilter;
     })
-    .sort((a, b) => b.timestamp - a.timestamp);
+    .sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
 
-  const uniqueBooks = [...new Set(entries.map(entry => entry.bookId))]
-    .map(bookId => sampleBooks.find(book => book.id.toString() === bookId))
+  const uniqueBooks = [...new Set(entries.map(entry => entry.bookId._id))]
+    .map(bookId => books.find(book => book._id === bookId))
     .filter(book => book);
 
   const resetForm = () => {
@@ -323,12 +333,12 @@ const ReadingProgress = () => {
                 value={formData.bookId}
                 onChange={handleBookSelect}
                 className={errors.bookId ? 'error' : ''}
-                disabled={editingEntry !== null} // Disable book selection when editing
+                disabled={editingEntry !== null}
               >
                 <option value="">Choose a book</option>
-                {sampleBooks.map(book => (
-                  <option key={book.id} value={book.id}>
-                    {book.title} ({book.totalPages} pages)
+                {books.map(book => (
+                  <option key={book._id} value={book._id}>
+                    {book.title} ({book.pages} pages)
                   </option>
                 ))}
               </select>
@@ -342,12 +352,12 @@ const ReadingProgress = () => {
                     <div className="progress-bar">
                       <div 
                         className="progress-fill"
-                        style={{ width: `${calculateProgress(getLatestPage(), selectedBook.totalPages)}%` }}
+                        style={{ width: `${calculateProgress(getLatestPage(), selectedBook.pages)}%` }}
                       ></div>
                     </div>
                     <div className="progress-info">
-                      <span>Current Page: {getLatestPage()} of {selectedBook.totalPages}</span>
-                      <span>{calculateProgress(getLatestPage(), selectedBook.totalPages)}% complete</span>
+                      <span>Current Page: {getLatestPage()} of {selectedBook.pages}</span>
+                      <span>{calculateProgress(getLatestPage(), selectedBook.pages)}% complete</span>
                     </div>
                     <div className="remaining-pages">
                       {getRemainingPages()} pages remaining
@@ -393,7 +403,7 @@ const ReadingProgress = () => {
                     onChange={handleInputChange}
                     className={errors.currentPage ? 'error' : ''}
                     min="1"
-                    max={selectedBook.totalPages}
+                    max={selectedBook.pages}
                   />
                   {errors.currentPage && <div className="error-message">{errors.currentPage}</div>}
                 </div>
@@ -440,18 +450,7 @@ const ReadingProgress = () => {
                     <button 
                       type="button" 
                       className="cancel-btn"
-                      onClick={() => {
-                        setEditingEntry(null);
-                        setFormData({
-                          bookId: '',
-                          startDate: new Date(),
-                          targetDate: new Date(),
-                          currentPage: 0,
-                          readingDevice: 'paper',
-                          comment: '',
-                        });
-                        setSelectedBook(null);
-                      }}
+                      onClick={resetForm}
                     >
                       Cancel
                     </button>
@@ -461,6 +460,8 @@ const ReadingProgress = () => {
             )}
           </form>
 
+          {loading && <div className="loading-spinner">Loading...</div>}
+          
           {entries.length > 0 && (
             <div className="entries-section">
               <div className="entries-header">
@@ -485,7 +486,7 @@ const ReadingProgress = () => {
                     >
                       <option value="">All Books</option>
                       {uniqueBooks.map(book => (
-                        <option key={book.id} value={book.id}>
+                        <option key={book._id} value={book._id}>
                           {book.title}
                         </option>
                       ))}
@@ -496,29 +497,29 @@ const ReadingProgress = () => {
                 <div className="history-summary">
                   <p>Total Entries: {filteredEntries.length}</p>
                   {filterBookId && (
-                    <p>Showing entries for: {sampleBooks.find(b => b.id.toString() === filterBookId)?.title}</p>
+                    <p>Showing entries for: {books.find(b => b._id === filterBookId)?.title}</p>
                   )}
                 </div>
               </div>
 
               <div className="entries-list">
                 {filteredEntries.map((entry) => {
-                  const book = sampleBooks.find(b => b.id.toString() === entry.bookId);
+                  const book = books.find(b => b._id === entry.bookId._id);
                   if (!book) return null;
                   
-                  const progress = calculateProgress(entry.currentPage, book.totalPages);
-                  const remainingPages = book.totalPages - entry.currentPage;
+                  const progress = calculateProgress(entry.currentPage, book.pages);
+                  const remainingPages = book.pages - entry.currentPage;
 
                   return (
-                    <div key={entry.id} className="entry-card">
+                    <div key={entry._id} className="entry-card">
                       <div className="entry-header">
                         <div className="entry-info">
-                          <h3>{entry.bookTitle}</h3>
-                          <p className="entry-date">{formatDate(entry.timestamp)}</p>
+                          <h3>{entry.bookId.title}</h3>
+                          <p className="entry-date">{formatDate(entry.createdAt)}</p>
                           <div className="page-info">
                             <div className="progress-stats">
                               <p className="current-page">
-                                Page {entry.currentPage} of {book.totalPages}
+                                Page {entry.currentPage} of {book.pages}
                               </p>
                               <p className="progress-percentage">
                                 {progress}% complete
@@ -531,7 +532,7 @@ const ReadingProgress = () => {
                         </div>
                         <div className="entry-actions">
                           <button className="edit-btn" onClick={() => handleEdit(entry)}>Edit</button>
-                          <button className="delete-btn" onClick={() => handleDelete(entry.id)}>Delete</button>
+                          <button className="delete-btn" onClick={() => handleDelete(entry._id)}>Delete</button>
                         </div>
                       </div>
                       
