@@ -32,7 +32,12 @@ router.post('/', async (req, res) => {
     const newBook = await book.save();
     res.status(201).json(newBook);
   } catch (error) {
-    res.status(400).json({ message: error.message });
+    if (error.code === 11000) {
+      // Duplicate key error
+      res.status(400).json({ message: 'A book with the same title and author already exists.' });
+    } else {
+      res.status(400).json({ message: error.message });
+    }
   }
 });
 
@@ -48,7 +53,12 @@ router.put('/:id', async (req, res) => {
     const updatedBook = await book.save();
     res.json(updatedBook);
   } catch (error) {
-    res.status(400).json({ message: error.message });
+    if (error.code === 11000) {
+      // Duplicate key error
+      res.status(400).json({ message: 'A book with the same title and author already exists.' });
+    } else {
+      res.status(400).json({ message: error.message });
+    }
   }
 });
 

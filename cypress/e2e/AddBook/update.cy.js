@@ -20,7 +20,7 @@ describe('Update Book Tests', () => {
     cy.get('select[name="edition"]').select('1st Edition');
     cy.get('input[name="pages"]').type('250');
     cy.get('.date-picker').click();
-    cy.get('.react-datepicker__day--015').first().click();
+    cy.get('.react-datepicker__day--005').first().click();
     cy.get('button').contains(/Add Book/i).click();
     
     cy.get('button').contains(/Edit/i).click();

@@ -19,7 +19,7 @@ describe('Add Book Success Tests', () => {
     cy.get('select[name="edition"]').select('2nd Edition');
     cy.get('input[name="pages"]').type('250');
     cy.get('.date-picker').click();
-    cy.get('.react-datepicker__day--015').first().click();
+    cy.get('.react-datepicker__day--005').first().click();
     cy.get('button').contains(/Add Book/i).click();
     cy.contains('Book added successfully!');
     cy.contains('Valid Title');

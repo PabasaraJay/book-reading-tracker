@@ -19,7 +19,7 @@ describe('Add Book Duplicate Tests', () => {
     cy.get('select[name="edition"]').select('1st Edition');
     cy.get('input[name="pages"]').type('100');
     cy.get('.date-picker').click();
-    cy.get('.react-datepicker__day--010').first().click();
+    cy.get('.react-datepicker__day--005').first().click();
     cy.get('button').contains(/Add Book/i).click();
 
     // Try to add again
@@ -30,7 +30,7 @@ describe('Add Book Duplicate Tests', () => {
     cy.get('select[name="edition"]').select('1st Edition');
     cy.get('input[name="pages"]').type('100');
     cy.get('.date-picker').click();
-    cy.get('.react-datepicker__day--010').first().click();
+    cy.get('.react-datepicker__day--005').first().click();
     cy.get('button').contains(/Add Book/i).click();
 
     cy.contains('A book with the same title and author already exists.');

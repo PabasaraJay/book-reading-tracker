@@ -61,4 +61,7 @@ const bookSchema = new mongoose.Schema({
   timestamps: true
 });
 
+// Add compound unique index for title and author
+bookSchema.index({ title: 1, author: 1 }, { unique: true });
+
 module.exports = mongoose.model('Book', bookSchema); 
