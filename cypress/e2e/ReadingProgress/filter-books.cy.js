@@ -5,13 +5,16 @@ describe('Filter Books Test', () => {
         cy.clearCookies();
         
         // Login
-        cy.visit('/login');
-        cy.get('[data-testid="username"]').type('admin');
-        cy.get('[data-testid="password"]').type('1234');
-        cy.get('[data-testid="submit-login"]').click();
-        
+        cy.visit('http://localhost:3000/login');
+        cy.get('input#username').type('admin');
+        cy.get('input#password').type('1234');
+        cy.get('form').submit();
+            
+            // Wait for login to complete and redirect
+        cy.url().should('eq', 'http://localhost:3000/');
+            
         // Navigate to reading progress page
-        cy.visit('/reading-progress');
+        cy.visit('http://localhost:3000/reading-progress');
         
         // Wait for the form to be visible
         cy.get('.reading-progress').should('be.visible');
@@ -19,14 +22,14 @@ describe('Filter Books Test', () => {
 
     it('should test filter and search functionality for reading progress', () => {
         // Add first book (The Hobbit)
-        cy.get('select[name="bookId"]').select('1');
+        cy.get('select').select(1);    
         cy.get('.react-datepicker-wrapper').first().click();
-        cy.get('.react-datepicker__day--028').click();
+        cy.get('.react-datepicker__day--003').click();
         
         // Set target completion date to 1st May 2025
         cy.get('.react-datepicker-wrapper').last().click();
         cy.get('.react-datepicker__navigation--next').click();
-        cy.get('.react-datepicker__day--001').click();
+        cy.get('.react-datepicker__day--007').click();
         cy.get('input[name="currentPage"]').type('75');
         
         // Select reading device as paper
@@ -41,14 +44,14 @@ describe('Filter Books Test', () => {
             .and('contain', 'Reading progress saved successfully!');
 
         // Add second book (Harry Potter)
-        cy.get('select[name="bookId"]').select('2');
+        cy.get('select').select(2);    
         cy.get('.react-datepicker-wrapper').first().click();
-        cy.get('.react-datepicker__day--028').click();
+        cy.get('.react-datepicker__day--002').click();
         
         // Set target completion date to 1st May 2025
         cy.get('.react-datepicker-wrapper').last().click();
         cy.get('.react-datepicker__navigation--next').click();
-        cy.get('.react-datepicker__day--001').click();
+        cy.get('.react-datepicker__day--006').click();
         cy.get('input[name="currentPage"]').type('75');
         
         // Select reading device as paper

@@ -75,7 +75,7 @@ const QuoteCollection = () => {
     // Check for duplicate quotes
     if (interactedFields.has('quote') && interactedFields.has('book') && interactedFields.has('page')) {
       const isDuplicate = quotes.some(q => 
-        q.bookId._id === selectedBook && 
+        q.bookId && q.bookId._id === selectedBook && 
         q.pageNumber === Number(pageNumber) && 
         q.text.toLowerCase() === quoteText.toLowerCase() &&
         q._id !== editingQuote?._id
@@ -187,7 +187,7 @@ const QuoteCollection = () => {
   };
 
   const filteredQuotes = quotes
-    .filter(q => selectedBook ? q.bookId._id === selectedBook : true)
+    .filter(q => selectedBook ? (q.bookId && q.bookId._id === selectedBook) : true)
     .sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
 
   // Helper function to get dates with quotes
@@ -204,7 +204,7 @@ const QuoteCollection = () => {
       .map(quote => ({
         text: quote.text,
         note: quote.note,
-        bookTitle: quote.bookId.title
+        bookTitle: quote.bookId?.title || 'Unknown Book'
       }));
   };
 
@@ -368,7 +368,7 @@ const QuoteCollection = () => {
                     <p className="quote-note">📝 {quote.note}</p>
                   )}
                   <p className="quote-meta">
-                    <span className="book-title">{quote.bookId.title}</span>
+                    <span className="book-title">{quote.bookId?.title || 'Unknown Book'}</span>
                     <span className="page-number">Page {quote.pageNumber}</span>
                     <span className="date">
                       {new Date(quote.date).toLocaleDateString()}

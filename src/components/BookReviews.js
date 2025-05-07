@@ -158,7 +158,7 @@ const BookReviews = () => {
       const searchLower = searchTerm.toLowerCase();
       return (
         review.comment.toLowerCase().includes(searchLower) ||
-        review.bookId.title.toLowerCase().includes(searchLower)
+        (review.bookId && review.bookId.title && review.bookId.title.toLowerCase().includes(searchLower))
       );
     })
     .sort((a, b) => {
@@ -174,9 +174,9 @@ const BookReviews = () => {
 
   const averageRating = selectedBook
     ? reviews
-        .filter(review => review.bookId._id === selectedBook._id)
+        .filter(review => review.bookId && review.bookId._id === selectedBook._id)
         .reduce((acc, review) => acc + review.rating, 0) / 
-        reviews.filter(review => review.bookId._id === selectedBook._id).length
+        reviews.filter(review => review.bookId && review.bookId._id === selectedBook._id).length
     : 0;
 
   return (
@@ -277,7 +277,7 @@ const BookReviews = () => {
                 >
                   {editingReview?._id === review._id ? (
                     <div className="edit-review-form">
-                      <h4>{review.bookId.title}</h4>
+                      <h4>{review.bookId?.title || 'Unknown Book'}</h4>
                       <div className="rating-stars">
                         Rating:
                         {[1, 2, 3, 4, 5].map(star => (
@@ -313,7 +313,7 @@ const BookReviews = () => {
                     </div>
                   ) : (
                     <>
-                      <h4>{review.bookId.title}</h4>
+                      <h4>{review.bookId?.title || 'Unknown Book'}</h4>
                       <p>Rating: {'⭐'.repeat(review.rating)}</p>
                       <p>{review.comment}</p>
                       <p className="review-date">
