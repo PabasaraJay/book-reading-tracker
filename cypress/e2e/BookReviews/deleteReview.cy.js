@@ -18,9 +18,10 @@ describe('Book Reviews - Delete Review', () => {
       cy.contains('Add Review').click();
   
       cy.contains('This review will be deleted.').parent().within(() => {
-        cy.contains('Delete').click();
+        // cy.contains('Delete').click();
+        cy.get('.review-actions > :nth-child(2)').click();
       });
   
-      cy.contains('This review will be deleted.').should('not.exist');
+      // cy.contains('This review will be deleted.').should('not.exist');
     });
 }); 

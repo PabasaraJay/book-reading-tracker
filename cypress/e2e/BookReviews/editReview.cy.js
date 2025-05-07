@@ -17,11 +17,10 @@ describe('Book Reviews - Edit Review', () => {
       cy.get('textarea').type('Editing test review.');
       cy.contains('Add Review').click();
   
-      cy.contains('Editing test review.').parent().within(() => {
-        cy.contains('Edit').click();
-      });
+      cy.get(':nth-child(1) > .review-actions > :nth-child(1)').click();
+
   
-      cy.get('textarea').clear().type('Updated the review comment.');
+      cy.get('.edit-review-form > .review-textarea').clear().type('Updated the review comment.');
       cy.contains('Update Review').click();
   
       cy.contains('Updated the review comment.').should('exist');
